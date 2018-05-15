@@ -1,0 +1,8 @@
+tensorflow-gpu
+keras
+deepdish
+scipy
+numpy
+pandas
+matplotlib
+ipykernel
