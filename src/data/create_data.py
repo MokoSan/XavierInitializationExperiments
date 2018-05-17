@@ -21,6 +21,7 @@ class CreateDataset:
     """
 
     def mnist(self):
+
         """
         Returns:
             A tuple of training and validation sets of the MNIST dataset.
@@ -48,6 +49,7 @@ class CreateDataset:
         return x_train, y_train, x_val, y_val
 
     def cifar10(self):
+
         """
         Returns:
             A tuple of training and validation sets of the MNIST dataset.
@@ -56,6 +58,7 @@ class CreateDataset:
             - x_val: flattened validation set, mean subtracted and standardized using the training set
             - y_val: one hot encoded validation classes
         """
+
         (x_train, y_train), (x_val, y_val) = cifar10.load_data()
 
         x_mean = x_train.mean()
@@ -74,6 +77,7 @@ class CreateDataset:
         return x_train, y_train, x_val, y_val
 
     def shapeset(self):
+
         """
         Returns:
             A generator that yeilds batches of size 10, of features and one hot encoded classes, and a validation set of
@@ -107,6 +111,7 @@ class CreateDataset:
         return shapeset_generator, x_val, y_val
 
     def generator(self, data_generator, batch_size):
+
         """
         Creates generator of batches of Shapeset features and labels, of batch size 10
 
@@ -118,9 +123,6 @@ class CreateDataset:
             - batch_feautures: flattened batches of Shapeset features as numpy arrays
             - batch_labels: batches of one hot encoded Shapeset classes as numpy arrays
         """
-
-        batch_features = np.zeros((batch_size, 1024))
-        batch_labels = np.zeros((batch_size, 9))
 
         while True:
             data_generator.next()
@@ -146,8 +148,8 @@ class CreateDataset:
 
         return target
 
-
     def create_validation_set(self, data_generator):
+
         """
         Creates validaiton set by generator 30 batches of examples
 

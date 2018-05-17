@@ -19,6 +19,7 @@ def FullyConnectedNN(input_shape, classes, five_layers, activation, normalizatio
         - model: model class created with specified inputs
 
     """
+
     w_in = np.sqrt(0.001)
     initializer = RandomUniform(minval=-w_in, maxval=w_in)
 
