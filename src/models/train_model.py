@@ -65,18 +65,44 @@ def multi_gpu(model, num_gpus):
     parallel_model = multi_gpu_model(p_model, gpus=num_gpus)
     
     return parallel_model
+
+def filename(opts):
+    
+    act = opts.activation
+    
+    if opts.normalization:
+        norm = 'xavier'
+    else:
+        norm = 'random'
+    
+    if opts.five_layer:
+        layers = 'five_layers'
+    else:
+        layers = 'four_layers' 
+    
+    return '-'.join([act, norm, layers]) + '.h5'
     
     
 def main():
     parser = build_parser()
     options = parser.parse_args()
     check_opts(options)
+    fname = filename(options)
     
     data = CreateDataset()
     
     create_data_method = getattr(data, options.dataset)
     
     train_data, validation_data, params = create_data_method()
+    
+    history_DIR = 'model_history'
+    data_history_DIR = os.path.join(history_DIR, options.dataset)
+    
+    if not os.path.exists(history_DIR):
+        os.makedirs(history_DIR)
+    
+    if not os.path.exists(data_history_DIR):
+        os.makedirs(data_history_DIR)
         
     kwargs = {"input_shape" : params['input_shape'], 
               "classes" : params['num_classes'], 
@@ -96,6 +122,8 @@ def main():
     num_epochs = params['num_epochs']
            
     history = History()
+    
+    callbacks = [history]
         
     if options.dataset == 'shapeset':    
         steps_per_epoch=params['steps_per_epoch']
@@ -103,9 +131,10 @@ def main():
         if options.debug:
             num_epochs = 5
             steps_per_epoch = 1000
+            callbacks = None
         
         model.fit_generator(generator=train_data, steps_per_epoch=steps_per_epoch, epochs=num_epochs,
-                            validation_data=validation_data, callbacks=[history])
+                            validation_data=validation_data, callbacks=callbacks)
     else:
         x, y = train_data
         
@@ -113,9 +142,12 @@ def main():
             num_epochs = 5
             x = x[:1000]
             y = y[:1000]
+            callbacks = None
         
         model.fit(x=x, y=y, batch_size=options.batch_size, epochs=num_epochs, 
-                  callbacks=[history], validation_data=validation_data)
+                  callbacks=callbacks, validation_data=validation_data)
+    
+    dd.io.save(os.path.join(history_DIR, options.dataset, fname), history.history)    
     
     print 'COMPLETE'
         
