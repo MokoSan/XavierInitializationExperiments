@@ -45,8 +45,14 @@ class CreateDataset:
         x_val /= x_std
         x_val = x_val.reshape(x_val.shape[0], -1)
         y_val = to_categorical(y_val, 10)
+        
+        train_data = (x_train, y_train)
+        validation_data = (x_val, y_val)
+        
+        params = {'input_shape': x_train.shape[1], 
+                  'num_classes': y_train.shape[1]}
 
-        return x_train, y_train, x_val, y_val
+        return train_data, validation_data, params
 
     def cifar10(self):
 
@@ -73,8 +79,14 @@ class CreateDataset:
         x_val /= x_std
         x_val = x_val.reshape(x_val.shape[0], -1)
         y_val = to_categorical(y_val, 10)
+        
+        train_data = (x_train, y_train)
+        validation_data = (x_val, y_val)
+        
+        params = {'input_shape': x_train.shape[1], 
+                  'num_classes': y_train.shape[1]}
 
-        return x_train, y_train, x_val, y_val
+        return train_data, validation_data, params
 
     def shapeset(self):
 
@@ -107,8 +119,13 @@ class CreateDataset:
 
         shapeset_generator = self.generator(data_generator=curridata, batch_size=batchsize)
         x_val, y_val = self.create_validation_set(data_generator=curridata)
+        
+        validation_data = (x_val, y_val)
+        
+        params = {'input_shape': x_val.shape[1], 
+                  'num_classes': y_val.shape[1]}
 
-        return shapeset_generator, x_val, y_val
+        return shapeset_generator, validation_data, params
 
     def generator(self, data_generator, batch_size):
 
@@ -179,13 +196,16 @@ class CreateDataset:
 if __name__ == '__main__':
 
     data = CreateDataset()
-    flag = 'mnist'
+    flag = 'shapeset'
     create_data_method = getattr(data, flag)
 
     if flag == 'shapeset':
-        x_gen, x_val, y_val = create_data_method()
+        x_gen, validation_data, params = create_data_method()
+        x_val, y_val = validation_data
         x_train, y_train = next(x_gen)
     else:
-        x_train, y_train, x_val, y_val = create_data_method()
+        train_data, validation_data, params = create_data_method()
+        x_train, y_train = train_data
+        x_val, y_val = validation_data
 
-    print (x_train.shape, y_train.shape, x_val.shape, y_val.shape)
+    print (x_train.shape, y_train.shape, x_val.shape, y_val.shape, params)

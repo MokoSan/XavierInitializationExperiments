@@ -37,7 +37,7 @@ def FullyConnectedNN(input_shape, classes, five_layers, activation, normalizatio
     for _ in range(num_layers - 2):
         x = Dense(units=1000, activation=activation, kernel_initializer=initializer)(x)
 
-    x_output = Dense(units=classes, activation='sotfmax', kernel_initializer=initializer)(x)
+    x_output = Dense(units=classes, activation='softmax', kernel_initializer=initializer)(x)
 
     model = Model(inputs=x_input, outputs=x_output)
 
