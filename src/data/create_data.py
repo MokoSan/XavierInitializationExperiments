@@ -50,7 +50,8 @@ class CreateDataset:
         validation_data = (x_val, y_val)
         
         params = {'input_shape': x_train.shape[1], 
-                  'num_classes': y_train.shape[1]}
+                  'num_classes': y_train.shape[1],
+                  'num_epochs': int(2.5e7/x_train.shape[0])}
 
         return train_data, validation_data, params
 
@@ -84,7 +85,8 @@ class CreateDataset:
         validation_data = (x_val, y_val)
         
         params = {'input_shape': x_train.shape[1], 
-                  'num_classes': y_train.shape[1]}
+                  'num_classes': y_train.shape[1],
+                  'num_epochs': int(2.5e7/x_train.shape[0])}
 
         return train_data, validation_data, params
 
@@ -123,7 +125,9 @@ class CreateDataset:
         validation_data = (x_val, y_val)
         
         params = {'input_shape': x_val.shape[1], 
-                  'num_classes': y_val.shape[1]}
+                  'num_classes': y_val.shape[1],
+                  'num_epochs': int(2.5e7/2e5),
+                  'steps_per_epoch': 20000}
 
         return shapeset_generator, validation_data, params
 
@@ -196,7 +200,7 @@ class CreateDataset:
 if __name__ == '__main__':
 
     data = CreateDataset()
-    flag = 'shapeset'
+    flag = 'cifar10'
     create_data_method = getattr(data, flag)
 
     if flag == 'shapeset':
