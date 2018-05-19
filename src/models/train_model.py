@@ -3,6 +3,7 @@ from tensorflow.python.client import device_lib
 from tensorflow.python.keras.utils import multi_gpu_model
 from tensorflow.python.keras.optimizers import SGD
 from tensorflow.python.keras.callbacks import History
+from lib.KerasHelpers.ActivationStudy import GradientActivationStore
 from data.create_data import CreateDataset
 from models.model import FullyConnectedNN
 from argparse import ArgumentParser
@@ -57,15 +58,25 @@ def check_opts(opts):
     assert opts.batch_size > 0
     assert opts.debug in [True, False]
     
-def multi_gpu(model, num_gpus):
+def model_placement(model, num_gpus):
     
-    with tf.device('/cpu:0'):
-        p_model = model
+    if num_gpus > 1: 
+        with tf.device('/cpu:0'):
+            p_model = model
+        parallel_model = multi_gpu_model(p_model, gpus=num_gpus)
     
-    parallel_model = multi_gpu_model(p_model, gpus=num_gpus)
+        return parallel_model
     
-    return parallel_model
-
+    elif num_gpus == 0:
+        with tf.device('/cpu:0'):
+            p_model = model
+        return p_model
+    
+    else:
+        with tf.device('/gpu:0'):
+            p_model = model
+        return p_model
+    
 def filename(opts):
     
     act = opts.activation
@@ -80,7 +91,7 @@ def filename(opts):
     else:
         layers = 'four_layers' 
     
-    return '-'.join([act, norm, layers]) + '.h5'
+    return '-'.join([act, norm, layers])
     
     
 def main():
@@ -96,13 +107,15 @@ def main():
     train_data, validation_data, params = create_data_method()
     
     history_DIR = 'model_history'
-    data_history_DIR = os.path.join(history_DIR, options.dataset)
+    data_DIR = os.path.join(history_DIR, options.dataset)
+    experiment_DIR = os.path.join(data_DIR, fname)
     
     if not os.path.exists(history_DIR):
         os.makedirs(history_DIR)
     
-    if not os.path.exists(data_history_DIR):
-        os.makedirs(data_history_DIR)
+    if not os.path.exists(data_DIR):
+        os.makedirs(data_DIR)
+        os.makedirs(experiment_DIR)
         
     kwargs = {"input_shape" : params['input_shape'], 
               "classes" : params['num_classes'], 
@@ -112,31 +125,38 @@ def main():
     
     model = FullyConnectedNN(**kwargs)
     
-    if options.num_gpus > 1:
-        model = multi_gpu(model=model, num_gpus=options.num_gpus)
+    p_model = model_placement(model=model, num_gpus=options.num_gpus)
     
-    model.compile(loss='categorical_crossentropy', metrics=['accuracy'], optimizer=SGD(lr=options.lr))
+    p_model.compile(loss='categorical_crossentropy', metrics=['accuracy'], optimizer=SGD(lr=options.lr))
     
-    model.summary()
+    p_model.summary()
     
     num_epochs = params['num_epochs']
-           
-    history = History()
-    
-    callbacks = [history]
-        
+                       
     if options.dataset == 'shapeset':    
         steps_per_epoch=params['steps_per_epoch']
+        
+        history = History()
+        GAStore = GradientActivationStore(DIR=experiment_DIR, 
+                        num_classes=params['num_classes'], 
+                        record_every=1, only_weights=True)
+        
+        callbacks = [history, GAStore]
         
         if options.debug:
             num_epochs = 5
             steps_per_epoch = 1000
             callbacks = None
         
-        model.fit_generator(generator=train_data, steps_per_epoch=steps_per_epoch, epochs=num_epochs,
-                            validation_data=validation_data, callbacks=callbacks)
+        p_model.fit_generator(generator=train_data, 
+                            steps_per_epoch=steps_per_epoch, 
+                            epochs=num_epochs, 
+                            validation_data=validation_data, 
+                            callbacks=callbacks)
     else:
         x, y = train_data
+        history = History()
+        callbacks = [history]
         
         if options.debug:
             num_epochs = 5
@@ -144,12 +164,14 @@ def main():
             y = y[:1000]
             callbacks = None
         
-        model.fit(x=x, y=y, batch_size=options.batch_size, epochs=num_epochs, 
-                  callbacks=callbacks, validation_data=validation_data)
+        p_model.fit(x=x, y=y, 
+                  batch_size=options.batch_size, 
+                  epochs=num_epochs, 
+                  callbacks=callbacks, 
+                  validation_data=validation_data)
     
-    dd.io.save(os.path.join(history_DIR, options.dataset, fname), history.history)    
-    
-    print 'COMPLETE'
-        
+    if not options.debug:
+        dd.io.save(os.path.join(experiment_DIR, 'history.h5'), history.history)    
+            
 if __name__ == '__main__':
     main()
