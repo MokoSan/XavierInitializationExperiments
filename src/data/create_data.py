@@ -1,10 +1,12 @@
 from tensorflow.python.keras.datasets import mnist, cifar10
 from tensorflow.python.keras.utils import to_categorical
-from Shapeset.curridata import *
-from Shapeset.buildfeaturespolygon import *
-from Shapeset.polygongen import *
 import numpy as np
 import itertools
+import sys
+sys.path.append('../')
+from lib.Shapeset.curridata import *
+from lib.Shapeset.buildfeaturespolygon import *
+from lib.Shapeset.polygongen import *
 
 
 class CreateDataset:
@@ -200,7 +202,7 @@ class CreateDataset:
 if __name__ == '__main__':
 
     data = CreateDataset()
-    flag = 'cifar10'
+    flag = 'shapeset'
     create_data_method = getattr(data, flag)
 
     if flag == 'shapeset':

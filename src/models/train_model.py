@@ -3,13 +3,16 @@ from tensorflow.python.client import device_lib
 from tensorflow.python.keras.utils import multi_gpu_model
 from tensorflow.python.keras.optimizers import SGD
 from tensorflow.python.keras.callbacks import History
-from lib.KerasHelpers.ActivationStudy import GradientActivationStore
 from data.create_data import CreateDataset
 from models.model import FullyConnectedNN
 from argparse import ArgumentParser
 import deepdish as dd
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+import sys
+sys.path.append('../')
+from lib.KerasHelpers.ActivationStudy import GradientActivationStore
+
 
 max_gpus = len([x.name for x in device_lib.list_local_devices() if x.device_type == 'GPU'])
 
