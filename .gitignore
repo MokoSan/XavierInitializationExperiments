@@ -11,7 +11,8 @@ env/
 build/
 develop-eggs/
 dist/
-src/lib/
+model_history/
+visualizations/
 downloads/
 eggs/
 .eggs/
