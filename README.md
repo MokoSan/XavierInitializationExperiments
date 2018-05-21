@@ -55,5 +55,5 @@ Use experiment.py to train model using different activation functions, initializ
 * `--five_layer`: Flag to use a five layer model. If not called, four layer model is used. 
 * `--dataset`: Dataset to train network on. mnist, cifar10, shapeset can be used. Default is mnist. 
 * `--lr`: Learning rate for model. Default 1e-3. 
-* `--num_gpus`: Number of GPUs. Greater than 1 will run in parallel mode. 1 will use GPU. 0 will use CPU. **currently working on CPU only method for 0**. Default is 0. 
+* `--num_gpus`: Number of GPUs. Greater than 1 will run in parallel mode. 1 will use GPU. 0 will use CPU. Default is 0. 
 
