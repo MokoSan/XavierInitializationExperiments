@@ -9,10 +9,10 @@ from src.models.model import FullyConnectedNN
 from argparse import ArgumentParser
 import deepdish as dd
 import os
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+#os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 
-max_gpus = len([x.name for x in device_lib.list_local_devices() if x.device_type == 'GPU'])
+#max_gpus = len([x.name for x in device_lib.list_local_devices() if x.device_type == 'GPU'])
 
 def build_parser():
     
@@ -26,7 +26,7 @@ def build_parser():
                         dest='five_layer', help='4 or 5 layer deep model')
 
     parser.add_argument('--num_gpus', type=int,
-                        dest='num_gpus', help='number of gpus',
+                        dest='num_gpus', help='number of gpus. 0 for cpu only.',
                         metavar='num_gpus', default=0)
 
     parser.add_argument('--xavier', dest='normalization', action = 'store_true',
@@ -51,7 +51,7 @@ def build_parser():
 
 def check_opts(opts):
     assert opts.activation in ['sigmoid', 'tanh', 'softsign']
-    assert opts.num_gpus >= 0 and opts.num_gpus <= max_gpus
+    assert opts.num_gpus >= 0 #and opts.num_gpus <= max_gpus
     assert opts.five_layer in [True, False]
     assert opts.normalization in [True, False]
     assert opts.dataset in ['mnist', 'cifar10', 'shapeset']
@@ -69,8 +69,9 @@ def model_placement(model, num_gpus):
         return parallel_model
     
     elif num_gpus == 0:
-        with tf.device('/cpu:0'):
-            p_model = model
+        os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID" 
+        os.environ["CUDA_VISIBLE_DEVICES"] = ""
+        p_model = model
         return p_model
     
     else:
