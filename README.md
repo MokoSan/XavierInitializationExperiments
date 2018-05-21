@@ -1,10 +1,17 @@
 # xavier_init
 
-This repo uses Keras to replicate the experiments and results of ["Understanding the difficulty of training deep feedforward neural networks" by Xavier Glorot, Yoshua Bengio](http://proceedings.mlr.press/v9/glorot10a/glorot10a.pdf)
+This repo uses TensorFlow to replicate the experiments and results of ["Understanding the difficulty of training deep feedforward neural networks" by Xavier Glorot, Yoshua Bengio](http://proceedings.mlr.press/v9/glorot10a/glorot10a.pdf)
 
 ## Implementation Details
 
-Our implementations uses Keras wrapped over TensorFlow to train a feed forward neural network. The experiments compare Xaiver and Random Initialization. 
+Our implementations uses TensorFlow to train a feed forward neural network. The experiments compare Xaiver and Random Initialization for activation functions with fairly linear sections such as tanh, softsign and sigmoid. 
+
+There are two experiments conducted with this code
+* `Validation Error/Convergence`:  Models are trained on CIFAR10, MNIST and Shapeset with combinations of normalization schemes and activation functions. Error Rate and Loss on the validation set are recorded and compared. 
+
+* `Gradients and Activation Study`: For the Shapeset dataset, gradients and activations are recorded on the validation set for combinations of normalization schemes and activation functions. The distributions of the parameters are studied to see the effect of activation and normalization on model weights. 
+
+Our implementation did not tune for hyperparameters because of the large number of experiments that would be needed to run i.e 3 activation functions * 3 datasets * 2 normalization schemes * 2 architectures. Given the long training time, running 36 experiments can be very time consuming. Although, `experiment.py` contains flags for batch size and learning rate, if others would like to replicate our results. 
 
 ## Documentation
 
@@ -19,7 +26,7 @@ Run `./install.sh` in the working directory. It installs all the requirements fr
 * pandas
 * pygame
 * matplotlib
-* h5py==2.8.0rc1
+* h5py==2.8.0rc1 (Until new h5py update)
 * ipykernel
 
 #### Shapeset
@@ -32,7 +39,7 @@ Run `./install.sh` in the working directory. It installs all the requirements fr
 Use experiment.py to train model using different activation functions, initialization schemes and datasets. Run `python experiment.py` to conduct experiment. Training takes about an hour on a GTX 1080 Ti. **Before you run this, you should run `./install.sh`**.
 
 #### experiment.py
-`experiment.py` runs experiment of image classification using feed forward networks on different initialization schemes, activation functions and datasets. It saves training history, which includes training and validation accuracy and loss, and gradients and activations at the end of each epoch using the validation set. At the end of training, three files are saved into model_history/name_of_dataset/name_of_experiment/:
+`experiment.py` runs experiment of image classification using feed forward networks on different initialization schemes, activation functions and datasets. It saves training history, which includes training and validation accuracy and loss, and gradients and activations at the end of each epoch using the validation set. At the end of training, three files are saved into `model_history/name_of_dataset/name_of_experiment/`:
 
 * `history.h5` : h5py file containing a dictionary of the training and validation accuracy and loss. 
 * `activations.h5`: h5py file containing a dictionary of the activations on the validation set at the beginning of training and at the end of each epoch. The keys are 'epoch%d' and that results in another dictionary with keys of layers names such as 'dense_%d'.
@@ -48,5 +55,5 @@ Use experiment.py to train model using different activation functions, initializ
 * `--five_layer`: Flag to use a five layer model. If not called, four layer model is used. 
 * `--dataset`: Dataset to train network on. mnist, cifar10, shapeset can be used. Default is mnist. 
 * `--lr`: Learning rate for model. Default 1e-3. 
-* `--num_gpus`: Number of GPUs. Greater than 1 will run in parallel mode. 1 will use GPU. 0 will automatically place on GPU/CPU, currently working on CPU only method for 0. Default is 0. 
+* `--num_gpus`: Number of GPUs. Greater than 1 will run in parallel mode. 1 will use GPU. 0 will use CPU. **currently working on CPU only method for 0**. Default is 0. 
 
