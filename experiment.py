@@ -3,7 +3,7 @@ from tensorflow.python.client import device_lib
 from tensorflow.python.keras.utils import multi_gpu_model
 from tensorflow.python.keras.optimizers import SGD
 from tensorflow.python.keras.callbacks import History
-from lib.KerasHelpers.ActivationStudy import GradientActivationStore
+from lib.KerasHelpers.modelhelphers import GradientActivationStore, model_placement
 from src.data.create_data import CreateDataset
 from src.models.model import FullyConnectedNN
 from argparse import ArgumentParser
@@ -51,38 +51,18 @@ def build_parser():
 
 def check_opts(opts):
     assert opts.activation in ['sigmoid', 'tanh', 'softsign']
-    assert opts.num_gpus >= 0 #and opts.num_gpus <= max_gpus
+    assert opts.num_gpus >= 0
     assert opts.five_layer in [True, False]
     assert opts.normalization in [True, False]
     assert opts.dataset in ['mnist', 'cifar10', 'shapeset']
     assert opts.lr > 0
     assert opts.batch_size > 0
     assert opts.debug in [True, False]
-    
-def model_placement(model, num_gpus):
-    
-    if num_gpus > 1: 
-        with tf.device('/cpu:0'):
-            p_model = model
-        parallel_model = multi_gpu_model(p_model, gpus=num_gpus)
-    
-        return parallel_model
-    
-    elif num_gpus == 0:
-        os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID" 
-        os.environ["CUDA_VISIBLE_DEVICES"] = ""
-        p_model = model
-        return p_model
-    
-    else:
-        with tf.device('/gpu:0'):
-            p_model = model
-        return p_model
-    
+
 def filename(opts):
-    
+
     act = opts.activation
-    
+
     if opts.normalization:
         norm = 'xavier'
     else:

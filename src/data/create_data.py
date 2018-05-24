@@ -21,6 +21,44 @@ class CreateDataset:
 
     Use getattr function to assign a flag and call a method of this class
     """
+    
+    def __init__(self, debug=False):
+        self.debug = debug
+        
+    def keras_prebuilt(self):
+        x_mean = x_train.mean()
+        x_std = x_train.std()
+
+        x_train = x_train - x_mean
+        x_train /= x_std
+        x_train = x_train.reshape(x_train.shape[0], -1)
+        y_train = to_categorical(y_train, 10)
+
+        x_val = x_val - x_mean
+        x_val /= x_std
+        x_val = x_val.reshape(x_val.shape[0], -1)
+        y_val = to_categorical(y_val, 10)
+        
+        num_examples_train = x_train.shape[0]
+        num_examples_val = x_val.shape[0]
+        
+        num_feed_train = range(num_examples_train)
+        num_feed_val = range(num_examples_val)
+                
+        params = {'input_shape': x_train.shape[1], 
+                  'num_classes': y_train.shape[1],
+                  'num_epochs': int(2.5e7/num_examples_train)}
+
+        if self.debug: 
+            params['num_epochs'] = 5
+            num_feed_train = range(1000)
+            num_feed_val = range(100)
+            
+        train_data = (x_train[num_feed_train], y_train[num_feed_train])
+        validation_data = (x_val[num_feed_val], y_val[num_feed_val])
+        
+        return train_data, validation_data, params
+        
 
     def mnist(self):
 
@@ -48,13 +86,24 @@ class CreateDataset:
         x_val = x_val.reshape(x_val.shape[0], -1)
         y_val = to_categorical(y_val, 10)
         
-        train_data = (x_train, y_train)
-        validation_data = (x_val, y_val)
+        num_examples_train = x_train.shape[0]
+        num_examples_val = x_val.shape[0]
         
+        num_feed_train = range(num_examples_train)
+        num_feed_val = range(num_examples_val)
+                
         params = {'input_shape': x_train.shape[1], 
                   'num_classes': y_train.shape[1],
-                  'num_epochs': int(2.5e7/x_train.shape[0])}
+                  'num_epochs': int(2.5e7/num_examples_train)}
 
+        if self.debug: 
+            params['num_epochs'] = 5
+            num_feed_train = range(1000)
+            num_feed_val = range(100)
+            
+        train_data = (x_train[num_feed_train], y_train[num_feed_train])
+        validation_data = (x_val[num_feed_val], y_val[num_feed_val])
+        
         return train_data, validation_data, params
 
     def cifar10(self):
@@ -83,12 +132,23 @@ class CreateDataset:
         x_val = x_val.reshape(x_val.shape[0], -1)
         y_val = to_categorical(y_val, 10)
         
-        train_data = (x_train, y_train)
-        validation_data = (x_val, y_val)
+        num_examples_train = x_train.shape[0]
+        num_examples_val = x_val.shape[0]
+        
+        num_feed_train = range(num_examples_train)
+        num_feed_val = range(num_examples_val)
         
         params = {'input_shape': x_train.shape[1], 
                   'num_classes': y_train.shape[1],
-                  'num_epochs': int(2.5e7/x_train.shape[0])}
+                  'num_epochs': int(2.5e7/num_feed_train)}
+        
+        if self.debug: 
+            params['num_epochs'] = 5
+            num_feed_train = range(1000)
+            num_feed_val = range(100)
+        
+        train_data = (x_train[num_feed_train], y_train[num_feed_train])
+        validation_data = (x_val[num_feed_val], y_val[num_feed_val])
 
         return train_data, validation_data, params
 
@@ -130,6 +190,10 @@ class CreateDataset:
                   'num_classes': y_val.shape[1],
                   'num_epochs': int(2.5e7/2e5),
                   'steps_per_epoch': 20000}
+        
+        if self.debug:
+            params['num_epochs'] = 5
+            params['steps_per_epoch'] = 1000
 
         return shapeset_generator, validation_data, params
 
@@ -201,8 +265,8 @@ class CreateDataset:
 
 if __name__ == '__main__':
 
-    data = CreateDataset()
-    flag = 'shapeset'
+    data = CreateDataset(debug=True)
+    flag = 'mnist'
     create_data_method = getattr(data, flag)
 
     if flag == 'shapeset':
