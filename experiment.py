@@ -3,16 +3,15 @@ from tensorflow.python.client import device_lib
 from tensorflow.python.keras.utils import multi_gpu_model
 from tensorflow.python.keras.optimizers import SGD
 from tensorflow.python.keras.callbacks import History
-from lib.KerasHelpers.modelhelphers import GradientActivationStore, model_placement
+from lib.KerasHelpers.modelhelpers import GradientActivationStore, model_placement
 from src.data.create_data import CreateDataset
-from src.models.model import FullyConnectedNN
+from src.models.model import fully_connected_neural_net
 from argparse import ArgumentParser
 import deepdish as dd
 import os
-#os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 
-#max_gpus = len([x.name for x in device_lib.list_local_devices() if x.device_type == 'GPU'])
 
 def build_parser():
     
@@ -22,14 +21,14 @@ def build_parser():
                         dest='activation', help='activation function for model',
                         default='tanh')
 
-    parser.add_argument('--five_layer', action='store_true',
-                        dest='five_layer', help='4 or 5 layer deep model')
+    parser.add_argument('--is_five_layers', action='store_true',
+                        dest='is_five_layers', help='4 or 5 layer deep model')
 
     parser.add_argument('--num_gpus', type=int,
                         dest='num_gpus', help='number of gpus. 0 for cpu only.',
                         metavar='num_gpus', default=0)
 
-    parser.add_argument('--xavier', dest='normalization', action = 'store_true',
+    parser.add_argument('--xavier', dest='is_normalized', action = 'store_true',
                         help='xavier or random initialization',default=False)
 
     parser.add_argument('--dataset', type=str, dest='dataset', 
@@ -52,8 +51,8 @@ def build_parser():
 def check_opts(opts):
     assert opts.activation in ['sigmoid', 'tanh', 'softsign']
     assert opts.num_gpus >= 0
-    assert opts.five_layer in [True, False]
-    assert opts.normalization in [True, False]
+    assert opts.is_five_layers in [True, False]
+    assert opts.is_normalized in [True, False]
     assert opts.dataset in ['mnist', 'cifar10', 'shapeset']
     assert opts.lr > 0
     assert opts.batch_size > 0
@@ -63,12 +62,12 @@ def filename(opts):
 
     act = opts.activation
 
-    if opts.normalization:
+    if opts.is_normalized:
         norm = 'xavier'
     else:
         norm = 'random'
     
-    if opts.five_layer:
+    if opts.is_five_layers:
         layers = 'five_layers'
     else:
         layers = 'four_layers' 
@@ -101,11 +100,11 @@ def main():
         
     kwargs = {"input_shape" : params['input_shape'], 
               "classes" : params['num_classes'], 
-              "five_layers" : options.five_layer, 
+              "is_five_layers" : options.is_five_layers, 
               "activation" : options.activation,
-              "normalization" : options.normalization}
+              "is_normalized" : options.is_normalized}
     
-    model = FullyConnectedNN(**kwargs)
+    model = fully_connected_neural_net(**kwargs)
     
     p_model = model_placement(model=model, num_gpus=options.num_gpus)
     
